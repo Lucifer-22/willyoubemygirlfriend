@@ -1,0 +1,564 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>I have a question...</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;900&display=swap');
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'Nunito', sans-serif;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      transition: background 0.8s ease;
+    }
+
+    /* Phases get different backgrounds */
+    body.phase-intro { background: linear-gradient(135deg, #fce4ec 0%, #f8bbd0 50%, #f48fb1 100%); }
+    body.phase-question { background: linear-gradient(135deg, #fce4ec 0%, #f8bbd0 50%, #f48fb1 100%); }
+    body.phase-convincing { background: linear-gradient(135deg, #fff3e0 0%, #ffe0b2 50%, #ffcc80 100%); }
+    body.phase-celebration { background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 50%, #a5d6a7 100%); }
+
+    .scene {
+      text-align: center;
+      padding: 2rem;
+      max-width: 600px;
+      width: 100%;
+      position: relative;
+    }
+
+    /* ── Shared card styling ── */
+    .card {
+      background: rgba(255,255,255,0.85);
+      backdrop-filter: blur(12px);
+      border-radius: 24px;
+      padding: 2.5rem 2rem;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+      animation: cardIn 0.6s ease-out;
+    }
+
+    @keyframes cardIn {
+      from { opacity: 0; transform: translateY(30px) scale(0.95); }
+      to   { opacity: 1; transform: translateY(0) scale(1); }
+    }
+
+    .hidden { display: none !important; }
+
+    /* ── GIF ── */
+    .gif-frame {
+      width: 220px;
+      height: 220px;
+      margin: 0 auto 1.5rem;
+      border-radius: 20px;
+      overflow: hidden;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.12);
+    }
+    .gif-frame img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    /* ── Typography ── */
+    h1 {
+      font-size: 1.8rem;
+      font-weight: 900;
+      color: #c2185b;
+      margin-bottom: 0.5rem;
+      line-height: 1.3;
+    }
+    .subtitle {
+      font-size: 1rem;
+      color: #666;
+      margin-bottom: 1.5rem;
+    }
+
+    /* ── Buttons ── */
+    .btn-row {
+      display: flex;
+      gap: 1rem;
+      justify-content: center;
+      align-items: center;
+      flex-wrap: wrap;
+      margin-top: 1.5rem;
+    }
+
+    .btn {
+      border: none;
+      border-radius: 50px;
+      font-family: 'Nunito', sans-serif;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      white-space: nowrap;
+    }
+
+    .btn-yes {
+      background: linear-gradient(135deg, #e91e63, #f06292);
+      color: white;
+      padding: 14px 36px;
+      font-size: 1.15rem;
+      box-shadow: 0 4px 15px rgba(233,30,99,0.4);
+      animation: pulse 2s ease-in-out infinite;
+    }
+    .btn-yes:hover {
+      transform: scale(1.08);
+      box-shadow: 0 6px 25px rgba(233,30,99,0.5);
+    }
+
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.05); }
+    }
+
+    .btn-no {
+      background: #eee;
+      color: #999;
+      padding: 12px 28px;
+      font-size: 0.95rem;
+      position: relative;
+      transition: all 0.4s ease, left 0s, top 0s;
+    }
+    .btn-no:hover {
+      background: #e0e0e0;
+    }
+
+    /* ── Convincing phase: reason cards ── */
+    .reason-text {
+      font-size: 1.1rem;
+      color: #555;
+      min-height: 3rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      animation: fadeSlide 0.4s ease;
+    }
+
+    @keyframes fadeSlide {
+      from { opacity: 0; transform: translateY(10px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .progress-bar {
+      width: 100%;
+      height: 6px;
+      background: #eee;
+      border-radius: 3px;
+      margin-top: 1rem;
+      overflow: hidden;
+    }
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #e91e63, #ff6090);
+      border-radius: 3px;
+      transition: width 0.5s ease;
+    }
+
+    .score-label {
+      font-size: 0.8rem;
+      color: #999;
+      margin-top: 0.5rem;
+    }
+
+    /* ── Celebration ── */
+    .celebration h1 {
+      font-size: 2.2rem;
+      color: #2e7d32;
+      animation: celebBounce 0.6s ease;
+    }
+
+    @keyframes celebBounce {
+      0%   { transform: scale(0.3); opacity: 0; }
+      50%  { transform: scale(1.1); }
+      100% { transform: scale(1); opacity: 1; }
+    }
+
+    .love-note {
+      font-size: 1.05rem;
+      color: #555;
+      margin-top: 1rem;
+      line-height: 1.6;
+      animation: fadeSlide 0.8s ease 0.3s both;
+    }
+
+    /* ── Floating hearts background ── */
+    .floating-hearts {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      pointer-events: none;
+      z-index: 0;
+      overflow: hidden;
+    }
+    .floating-hearts span {
+      position: absolute;
+      font-size: 1.5rem;
+      animation: floatUp linear infinite;
+      opacity: 0.3;
+    }
+    @keyframes floatUp {
+      0%   { transform: translateY(100vh) rotate(0deg); opacity: 0.3; }
+      100% { transform: translateY(-10vh) rotate(360deg); opacity: 0; }
+    }
+
+    .scene { position: relative; z-index: 1; }
+
+    /* ── No button shrinking ── */
+    .btn-no.shrinking {
+      transform: scale(0.7);
+      opacity: 0.5;
+      font-size: 0.7rem;
+      padding: 6px 14px;
+    }
+
+    /* ── Typewriter for intro ── */
+    .typewriter {
+      display: inline-block;
+      overflow: hidden;
+      white-space: nowrap;
+      border-right: 3px solid #c2185b;
+      animation: typing 2s steps(20) forwards, blink 0.7s step-end infinite;
+      width: 0;
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: #c2185b;
+    }
+    @keyframes typing {
+      from { width: 0; }
+      to   { width: 100%; }
+    }
+    @keyframes blink {
+      50% { border-color: transparent; }
+    }
+
+    .intro-proceed {
+      margin-top: 2rem;
+      opacity: 0;
+      animation: fadeIn 0.5s ease 2.5s forwards;
+    }
+    @keyframes fadeIn {
+      to { opacity: 1; }
+    }
+
+    .btn-proceed {
+      background: linear-gradient(135deg, #e91e63, #f06292);
+      color: white;
+      padding: 12px 32px;
+      font-size: 1rem;
+      box-shadow: 0 4px 15px rgba(233,30,99,0.3);
+    }
+    .btn-proceed:hover {
+      transform: scale(1.05);
+    }
+
+    /* ── Dodging no button ── */
+    .btn-no.dodge {
+      transition: transform 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    }
+  </style>
+</head>
+<body class="phase-intro">
+
+  <!-- Floating hearts background -->
+  <div class="floating-hearts" id="floatingHearts"></div>
+
+  <div class="scene">
+
+    <!-- ═══════ PHASE 1: INTRO ═══════ -->
+    <div id="introPhase" class="card">
+      <div class="gif-frame">
+        <img src="./images/image2.gif" alt="Shy cat">
+      </div>
+      <div style="display:inline-block; max-width:100%;">
+        <span class="typewriter">Hey... can we talk?</span>
+      </div>
+      <div class="intro-proceed">
+        <button class="btn btn-proceed" onclick="goToQuestion()">Okay... what is it?</button>
+      </div>
+    </div>
+
+    <!-- ═══════ PHASE 2: THE QUESTION ═══════ -->
+    <div id="questionPhase" class="card hidden">
+      <div class="gif-frame">
+        <img id="mainGif" src="./images/image4.gif" alt="Hopeful face">
+      </div>
+      <h1 id="mainQuestion">Will you be my girlfriend?</h1>
+      <p class="subtitle" id="mainSubtitle">I've been meaning to ask you this for a while...</p>
+      <div class="btn-row">
+        <button class="btn btn-yes" id="yesBtn" onclick="sayYes()">Yes!</button>
+        <button class="btn btn-no" id="noBtn">No</button>
+      </div>
+    </div>
+
+    <!-- ═══════ PHASE 3: CONVINCING ═══════ -->
+    <div id="convincePhase" class="card hidden">
+      <div class="gif-frame">
+        <img id="convinceGif" src="" alt="Pleading">
+      </div>
+      <h1 id="convinceTitle">Wait wait wait...</h1>
+      <div class="reason-text" id="reasonText"></div>
+      <div class="progress-bar">
+        <div class="progress-fill" id="progressFill" style="width: 0%"></div>
+      </div>
+      <p class="score-label" id="scoreLabel">Convincing you: 0%</p>
+      <div class="btn-row">
+        <button class="btn btn-yes" id="convinceYes" onclick="sayYes()">Okay fine, YES!</button>
+        <button class="btn btn-no" id="convinceNo">Still no...</button>
+      </div>
+    </div>
+
+    <!-- ═══════ PHASE 4: CELEBRATION ═══════ -->
+    <div id="celebrationPhase" class="card hidden celebration">
+      <div class="gif-frame">
+        <img src="./images/image7.gif" alt="Celebrating!">
+      </div>
+      <h1 id="celebTitle">SHE SAID YES!!!</h1>
+      <p class="love-note" id="loveNote"></p>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
+  <script>
+    // ── State ──
+    let noCount = 0;
+    let convinceIndex = 0;
+    let dodgeActive = false;
+
+    // ── GIF paths for different moods (local files) ──
+    const gifs = {
+      nervous:    './images/image2.gif',
+      shocked:    './images/image3.gif',
+      pleading:   './images/image4.gif',
+      crying:     './images/image5.gif',
+      dramatic:   './images/image6.gif',
+      begging:    './images/image3.gif',
+      celebrate:  './images/image7.gif',
+    };
+
+    // ── Convincing reasons (funny + cute) ──
+    const reasons = [
+      { title: "Hold on, consider this...", text: "I will let you pick the restaurant EVERY time. Even that overpriced brunch place. EVERY. TIME.", gif: gifs.pleading },
+      { title: "But also...", text: "I will never judge your 3am snack choices. Cereal for dinner? That's called innovation.", gif: gifs.shocked },
+      { title: "And think about it...", text: "You'll get unlimited access to my hoodie collection. That's basically a wardrobe upgrade.", gif: gifs.pleading },
+      { title: "PLUS...", text: "I'll watch whatever you want on Netflix. Yes, even that show I said looked boring. I'll even pretend to like it.", gif: gifs.crying },
+      { title: "I'm not done...", text: "I'll learn your coffee order by heart. Grande iced oat milk latte with 2 pumps vanilla? Already memorized.", gif: gifs.dramatic },
+      { title: "And one more thing...", text: "My mom already likes you more than she likes me. Don't let her down.", gif: gifs.begging },
+      { title: "FINAL OFFER...", text: "I'll carry ALL the grocery bags in one trip. Both hands. No second trips. Ever. That's peak boyfriend material.", gif: gifs.dramatic },
+      { title: "Okay but seriously...", text: "I promise to always make you laugh, even on bad days. Especially on bad days.", gif: gifs.pleading },
+    ];
+
+    // ── Celebration messages ──
+    const celebrationMessages = [
+      "Best decision you ever made. Second best? Swiping right. Wait, did you swipe right? Doesn't matter now.",
+      "From this moment on, you officially have someone who will always save you the last slice. ...Okay, most of the time.",
+      "Alert: One boyfriend has been successfully acquired. Returns policy: non-existent. You're stuck with me.",
+    ];
+
+    // ── No button escalating text ──
+    const noTexts = [
+      "No",
+      "Are you sure??",
+      "Really really sure?",
+      "Think again maybe?",
+      "Sleep on it?",
+      "You're breaking my heart...",
+    ];
+
+    // ── Floating hearts ──
+    function spawnHearts() {
+      const container = document.getElementById('floatingHearts');
+      const emojis = ['💕', '💗', '💖', '✨', '💘', '🌸'];
+      for (let i = 0; i < 15; i++) {
+        const span = document.createElement('span');
+        span.textContent = emojis[Math.floor(Math.random() * emojis.length)];
+        span.style.left = Math.random() * 100 + '%';
+        span.style.animationDuration = (6 + Math.random() * 8) + 's';
+        span.style.animationDelay = (Math.random() * 10) + 's';
+        span.style.fontSize = (1 + Math.random() * 1.5) + 'rem';
+        container.appendChild(span);
+      }
+    }
+    spawnHearts();
+
+    // ── Phase transitions ──
+    function showPhase(id) {
+      document.querySelectorAll('.card').forEach(c => c.classList.add('hidden'));
+      document.getElementById(id).classList.remove('hidden');
+      // Re-trigger animation
+      const el = document.getElementById(id);
+      el.style.animation = 'none';
+      el.offsetHeight; // reflow
+      el.style.animation = '';
+    }
+
+    function goToQuestion() {
+      document.body.className = 'phase-question';
+      showPhase('questionPhase');
+      setupNoButton(document.getElementById('noBtn'), handleFirstNo);
+    }
+
+    // ── No button behavior: DODGE + SHRINK ──
+    function setupNoButton(btn, handler) {
+      let hoverCount = 0;
+
+      function dodge() {
+        hoverCount++;
+        // After 2 hovers, start dodging via transform (stays in flow, never lost)
+        if (hoverCount >= 2) {
+          btn.classList.add('dodge');
+          // Random translate within a bounded area around its original position
+          const rangeX = 200;
+          const rangeY = 150;
+          const tx = (Math.random() - 0.5) * 2 * rangeX;
+          const ty = (Math.random() - 0.5) * 2 * rangeY;
+          btn.style.transform = `translate(${tx}px, ${ty}px)`;
+        }
+        // Update text
+        if (hoverCount < noTexts.length) {
+          btn.textContent = noTexts[hoverCount];
+        }
+      }
+
+      btn.addEventListener('mouseenter', dodge);
+      btn.addEventListener('touchstart', (e) => { e.preventDefault(); dodge(); });
+      btn.addEventListener('click', handler);
+    }
+
+    function handleFirstNo() {
+      noCount++;
+      document.body.className = 'phase-convincing';
+      showPhase('convincePhase');
+      showNextReason();
+      setupConvinceNo();
+    }
+
+    // ── Convincing phase ──
+    function showNextReason() {
+      if (convinceIndex >= reasons.length) {
+        // Ran out of reasons — give in dramatically
+        document.getElementById('convinceTitle').textContent = "I literally have no more arguments...";
+        document.getElementById('reasonText').textContent = "But my heart still says you should say yes. Please? 🥺";
+        document.getElementById('convinceGif').src = gifs.begging;
+        document.getElementById('convinceNo').style.display = 'none';
+        document.getElementById('convinceYes').textContent = "UGH FINE, YES! 💕";
+        document.getElementById('convinceYes').style.fontSize = '1.4rem';
+        document.getElementById('convinceYes').style.padding = '18px 48px';
+        return;
+      }
+
+      const r = reasons[convinceIndex];
+      document.getElementById('convinceTitle').textContent = r.title;
+      document.getElementById('reasonText').innerHTML = `"${r.text}"`;
+      document.getElementById('convinceGif').src = r.gif;
+
+      // Progress bar
+      const pct = Math.round(((convinceIndex + 1) / reasons.length) * 100);
+      document.getElementById('progressFill').style.width = pct + '%';
+      document.getElementById('scoreLabel').textContent = `Convincing you: ${pct}%`;
+
+      // Grow yes button slightly each round
+      const yesBtn = document.getElementById('convinceYes');
+      const scale = 1 + (convinceIndex * 0.08);
+      yesBtn.style.transform = `scale(${scale})`;
+
+      // Shrink no button
+      const noBtn = document.getElementById('convinceNo');
+      const noScale = 1 - (convinceIndex * 0.08);
+      noBtn.style.transform = `scale(${Math.max(noScale, 0.5)})`;
+      noBtn.style.opacity = Math.max(1 - (convinceIndex * 0.1), 0.3);
+    }
+
+    function setupConvinceNo() {
+      const noBtn = document.getElementById('convinceNo');
+      noBtn.addEventListener('click', () => {
+        convinceIndex++;
+        // Re-trigger animation
+        const rt = document.getElementById('reasonText');
+        rt.style.animation = 'none';
+        rt.offsetHeight;
+        rt.style.animation = '';
+        showNextReason();
+      });
+    }
+
+    // ── CELEBRATION ──
+    function sayYes() {
+      document.body.className = 'phase-celebration';
+      showPhase('celebrationPhase');
+
+      // Reset any dodging no buttons
+      document.querySelectorAll('.btn-no.dodge').forEach(b => {
+        b.style.transform = '';
+        b.classList.remove('dodge');
+      });
+
+      // Random love note
+      document.getElementById('loveNote').textContent =
+        celebrationMessages[Math.floor(Math.random() * celebrationMessages.length)];
+
+      // Epic confetti sequence
+      fireConfetti();
+
+      // Add way more floating hearts
+      const container = document.getElementById('floatingHearts');
+      const emojis = ['💕', '💗', '💖', '❤️', '💘', '🎉', '🥳', '💐'];
+      for (let i = 0; i < 30; i++) {
+        const span = document.createElement('span');
+        span.textContent = emojis[Math.floor(Math.random() * emojis.length)];
+        span.style.left = Math.random() * 100 + '%';
+        span.style.animationDuration = (4 + Math.random() * 6) + 's';
+        span.style.animationDelay = (Math.random() * 3) + 's';
+        span.style.fontSize = (1.5 + Math.random() * 2) + 'rem';
+        span.style.opacity = '0.6';
+        container.appendChild(span);
+      }
+    }
+
+    function fireConfetti() {
+      const heart = confetti.shapeFromPath({
+        path: 'M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z',
+      });
+
+      const defaults = {
+        spread: 360, ticks: 200, gravity: 0.4, decay: 0.94,
+        startVelocity: 25, shapes: [heart],
+        colors: ['#ff69b4', '#ff1493', '#e91e63', '#f06292', '#ff6090', '#d81b60']
+      };
+
+      // Multiple bursts with delays
+      confetti({ ...defaults, particleCount: 60, scalar: 2.5, origin: { x: 0.5, y: 0.5 } });
+
+      setTimeout(() => {
+        confetti({ ...defaults, particleCount: 40, scalar: 3, origin: { x: 0.3, y: 0.6 } });
+        confetti({ ...defaults, particleCount: 40, scalar: 3, origin: { x: 0.7, y: 0.6 } });
+      }, 300);
+
+      setTimeout(() => {
+        confetti({ ...defaults, particleCount: 80, scalar: 2, origin: { x: 0.5, y: 0.3 } });
+      }, 700);
+
+      // Regular confetti too
+      setTimeout(() => {
+        confetti({
+          particleCount: 100, spread: 70, origin: { y: 0.6 },
+          colors: ['#ff69b4', '#ffd700', '#ff6347', '#00ced1', '#9370db']
+        });
+      }, 1000);
+
+      // Keep firing for a bit
+      let count = 0;
+      const interval = setInterval(() => {
+        confetti({ ...defaults, particleCount: 15, scalar: 2, origin: { x: Math.random(), y: Math.random() * 0.5 } });
+        count++;
+        if (count > 8) clearInterval(interval);
+      }, 500);
+    }
+  </script>
+</body>
+</html>
