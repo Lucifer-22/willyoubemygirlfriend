@@ -412,12 +412,24 @@
         // After 2 hovers, start dodging via transform (stays in flow, never lost)
         if (hoverCount >= 2) {
           btn.classList.add('dodge');
-          // Random translate within a bounded area around its original position
-          const rangeX = 200;
-          const rangeY = 150;
-          const tx = (Math.random() - 0.5) * 2 * rangeX;
-          const ty = (Math.random() - 0.5) * 2 * rangeY;
-          btn.style.transform = `translate(${tx}px, ${ty}px)`;
+          // Get button's position in the viewport
+          const rect = btn.getBoundingClientRect();
+          const btnCenterX = rect.left + rect.width / 2;
+          const btnCenterY = rect.top + rect.height / 2;
+          const vw = window.innerWidth;
+          const vh = window.innerHeight;
+          const pad = 20;
+
+          // How far can we translate before the button leaves the viewport?
+          const maxLeft = -(rect.left - pad);
+          const maxRight = vw - rect.right - pad;
+          const maxUp = -(rect.top - pad);
+          const maxDown = vh - rect.bottom - pad;
+
+          // Pick a random translation within those bounds
+          const tx = maxLeft + Math.random() * (maxRight - maxLeft);
+          const ty = maxUp + Math.random() * (maxDown - maxUp);
+          btn.style.transform = `translate(${Math.round(tx)}px, ${Math.round(ty)}px)`;
         }
         // Update text
         if (hoverCount < noTexts.length) {
